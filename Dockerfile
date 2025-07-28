@@ -12,7 +12,15 @@ ENV S3_BUCKET=**None** \
     GITEA_USER=git \
     GITEA_CUSTOM=/data/gitea
 
-COPY --from=source-image / / # если нужен весь gitea, иначе можно ограничить
+COPY --from=source-image /app /app
+COPY --from=source-image /data /data
+COPY --from=source-image /etc /etc
+COPY --from=source-image /usr /usr
+COPY --from=source-image /bin /bin
+COPY --from=source-image /lib /lib
+COPY --from=source-image /sbin /sbin
+COPY --from=source-image /tmp /tmp
+
 ADD install.sh install.sh
 RUN sh install.sh && rm install.sh
 
