@@ -11,7 +11,7 @@ ENV GITEA_VERSION=1.24.3 \
 	GITEA_USER=git \
 	GITEA_CUSTOM=/data/gitea
 
-RUN apk update && apk add --no-cache curl unzip python3 && \
+RUN apk update && apk add --no-cache curl unzip && \
 	adduser -D -s /bin/sh git
 
 ADD install.sh install.sh
