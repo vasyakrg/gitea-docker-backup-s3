@@ -2,27 +2,33 @@
 
 # exit if a command fails
 set -e
+set -x
 
 export PATH="/usr/local/bin:/usr/bin:/bin"
 
-# install awscli
+echo "Installing awscli..."
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
 unzip /tmp/awscliv2.zip -d /tmp
 /tmp/aws/install
-ln -s /usr/local/aws-cli/v2/current/bin/aws /usr/local/bin/aws
 rm -rf /tmp/aws /tmp/awscliv2.zip
+/usr/local/bin/aws --version
+echo "awscli installed successfully"
 
-# install gitea binary
-curl -L "https://dl.gitea.io/gitea/1.22.3/gitea-1.22.3-linux-amd64" -o /usr/local/bin/gitea
+echo "Installing gitea binary..."
+curl -L "https://dl.gitea.io/gitea/${GITEA_VERSION}/gitea-${GITEA_VERSION}-linux-amd64" -o /usr/local/bin/gitea
 chmod +x /usr/local/bin/gitea
+echo "gitea binary installed successfully"
 
-# install go-cron
+echo "Installing go-cron..."
 curl -L --insecure https://github.com/odise/go-cron/releases/download/v0.0.7/go-cron-linux.gz | zcat > /usr/local/bin/go-cron
 chmod u+x /usr/local/bin/go-cron
+echo "go-cron installed successfully"
 
-# make backup directory and change owner to git
+echo "Creating directories..."
 mkdir -p /backup /data
 chown git /backup /data
+echo "directories created successfully"
 
-# cleanup
+echo "Cleanup..."
 rm -rf /var/cache/apk/*
+echo "cleanup completed"

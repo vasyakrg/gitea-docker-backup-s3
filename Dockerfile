@@ -1,14 +1,15 @@
 FROM alpine:3.22
 
-ENV S3_BUCKET=**None** \
-    S3_REGION=**None** \
-    S3_ENDPOINT=**None** \
-    S3_S3V4=no \
-    S3_PREFIX=**None** \
-    S3_ENCRYPT=no \
-    SCHEDULE=**None** \
-    GITEA_USER=git \
-    GITEA_CUSTOM=/data/gitea
+ENV GITEA_VERSION=1.24.3 \
+	S3_BUCKET=**None** \
+	S3_REGION=**None** \
+	S3_ENDPOINT=**None** \
+	S3_S3V4=no \
+	S3_PREFIX=**None** \
+	S3_ENCRYPT=no \
+	SCHEDULE=**None** \
+	GITEA_USER=git \
+	GITEA_CUSTOM=/data/gitea
 
 RUN apk update && apk add --no-cache curl unzip python3 && \
 	adduser -D -s /bin/sh git
