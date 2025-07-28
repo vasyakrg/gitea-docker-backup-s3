@@ -48,7 +48,7 @@ move_to_s3 () {
   SRC_FILE=$1
   DEST_FILE=$2
 
-  echo "Uploading ${DEST_FILE} to S3..."
+  echo "Uploading ${DEST_FILE} to S3: ${S3_BUCKET}/${S3_PREFIX:+${S3_PREFIX}/}"
 
   rclone copy "$SRC_FILE" "s3:${S3_BUCKET}/${S3_PREFIX:+${S3_PREFIX}/}${DEST_FILE}"
 
