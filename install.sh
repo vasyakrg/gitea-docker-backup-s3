@@ -6,13 +6,14 @@ set -x
 
 export PATH="/usr/local/bin:/usr/bin:/bin"
 
-echo "Installing awscli..."
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
-unzip /tmp/awscliv2.zip -d /tmp
-/tmp/aws/install
-rm -rf /tmp/aws /tmp/awscliv2.zip
-/usr/local/bin/aws --version
-echo "awscli installed successfully"
+echo "Installing rclone..."
+curl -O https://downloads.rclone.org/rclone-current-linux-amd64.zip
+unzip rclone-current-linux-amd64.zip
+cp rclone-*-linux-amd64/rclone /usr/local/bin/
+chmod +x /usr/local/bin/rclone
+rm -rf rclone-*
+rclone version
+echo "rclone installed successfully"
 
 echo "Installing gitea binary..."
 curl -L "https://dl.gitea.io/gitea/${GITEA_VERSION}/gitea-${GITEA_VERSION}-linux-amd64" -o /usr/local/bin/gitea

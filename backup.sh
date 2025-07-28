@@ -20,40 +20,50 @@ if [ "${S3_REGION}" == "**None**" ]; then
   exit 1
 fi
 
+# Configure rclone for S3
+echo "Configuring rclone..."
+mkdir -p ~/.config/rclone
+
+# Build rclone config
+RCLONE_CONFIG="[s3]
+type = s3
+provider = AWS
+access_key_id = ${AWS_ACCESS_KEY_ID}
+secret_access_key = ${AWS_SECRET_ACCESS_KEY}
+region = ${S3_REGION}"
+
+if [ "${S3_ENDPOINT}" != "**None**" ]; then
+  RCLONE_CONFIG="${RCLONE_CONFIG}
+endpoint = ${S3_ENDPOINT}"
+fi
+
+if [ "${S3_ENCRYPT}" == "yes" ]; then
+  RCLONE_CONFIG="${RCLONE_CONFIG}
+server_side_encryption = AES256"
+fi
+
+echo "$RCLONE_CONFIG" > ~/.config/rclone/rclone.conf
+
 move_to_s3 () {
   SRC_FILE=$1
   DEST_FILE=$2
 
-  if [ "${S3_ENDPOINT}" == "**None**" ]; then
-    AWS_ARGS=""
-  else
-    AWS_ARGS="--endpoint-url ${S3_ENDPOINT}"
-  fi
-
   if [ "${S3_PREFIX}" == "**None**" ]; then
-    S3_URI="s3://${S3_BUCKET}/${DEST_FILE}"
+    S3_PATH="s3:${S3_BUCKET}/${DEST_FILE}"
   else
-    S3_URI="s3://${S3_BUCKET}/${S3_PREFIX}/${DEST_FILE}"
+    S3_PATH="s3:${S3_BUCKET}/${S3_PREFIX}/${DEST_FILE}"
   fi
 
-  if [ "${S3_ENCRYPT}" == "yes" ]; then
-    S3_OPTS="--sse"
-  else
-    S3_OPTS=""
-  fi
+  echo "Uploading ${DEST_FILE} to S3..."
 
-  echo "Uploading ${DEST_FILE} on S3..."
-
-  cat $SRC_FILE | aws $AWS_ARGS s3 cp - $S3_URI $S3_OPTS
+  rclone copy "$SRC_FILE" "$S3_PATH"
 
   if [ $? != 0 ]; then
-    >&2 echo "Error uploading ${DEST_FILE} on S3"
+    >&2 echo "Error uploading ${DEST_FILE} to S3"
   fi
 
-  rm $SRC_FILE
+  rm "$SRC_FILE"
 }
-
-export AWS_DEFAULT_REGION=$S3_REGION
 
 BACKUP_START_TIME=$(date +"%Y-%m-%dT%H%M%SZ")
 S3_FILE="${BACKUP_START_TIME}.gitea-dump.zip"
@@ -68,6 +78,6 @@ for FILE in /backup/*; do
   [[ $FILE -nt $DUMP_FILE ]] && DUMP_FILE=$FILE;
 done
 
-move_to_s3 $DUMP_FILE $S3_FILE
+move_to_s3 "$DUMP_FILE" "$S3_FILE"
 
 echo "Gitea backup finished"
