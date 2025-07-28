@@ -48,15 +48,9 @@ move_to_s3 () {
   SRC_FILE=$1
   DEST_FILE=$2
 
-  if [ "${S3_PREFIX}" == "**None**" ]; then
-    S3_PATH="s3:${S3_BUCKET}/${DEST_FILE}"
-  else
-    S3_PATH="s3:${S3_BUCKET}/${S3_PREFIX}/${DEST_FILE}"
-  fi
-
   echo "Uploading ${DEST_FILE} to S3..."
 
-  rclone copy "$SRC_FILE" "$S3_PATH"
+  rclone copy "$SRC_FILE" "s3:${S3_BUCKET}/${S3_PREFIX:+${S3_PREFIX}/}${DEST_FILE}"
 
   if [ $? != 0 ]; then
     >&2 echo "Error uploading ${DEST_FILE} to S3"
@@ -73,10 +67,18 @@ echo "Dumping Gitea..."
 su -c "/usr/local/bin/gitea dump" $GITEA_USER
 echo "Done"
 
-unset -v DUMP_FILE
-for FILE in /backup/*; do
-  [[ $FILE -nt $DUMP_FILE ]] && DUMP_FILE=$FILE;
+# Find the newest dump file
+DUMP_FILE=""
+for FILE in /backup/*.zip; do
+  if [ -f "$FILE" ] && [ -z "$DUMP_FILE" -o "$FILE" -nt "$DUMP_FILE" ]; then
+    DUMP_FILE="$FILE"
+  fi
 done
+
+if [ -z "$DUMP_FILE" ]; then
+  echo "Error: No dump file found"
+  exit 1
+fi
 
 move_to_s3 "$DUMP_FILE" "$S3_FILE"
 
