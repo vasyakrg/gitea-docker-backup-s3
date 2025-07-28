@@ -1,5 +1,3 @@
-FROM gitea/gitea:latest AS source-image
-
 FROM alpine:3.22
 
 ENV S3_BUCKET=**None** \
@@ -12,14 +10,7 @@ ENV S3_BUCKET=**None** \
     GITEA_USER=git \
     GITEA_CUSTOM=/data/gitea
 
-COPY --from=source-image /app /app
-COPY --from=source-image /etc /etc
-COPY --from=source-image /usr /usr
-COPY --from=source-image /bin /bin
-COPY --from=source-image /lib /lib
-COPY --from=source-image /sbin /sbin
-
-RUN mkdir -p /data
+RUN adduser -D -s /bin/sh git
 
 ADD install.sh install.sh
 RUN sh install.sh && rm install.sh
