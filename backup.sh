@@ -50,7 +50,7 @@ move_to_s3 () {
 
   echo "Uploading ${DEST_FILE} to S3: ${S3_BUCKET}/${S3_PREFIX:+${S3_PREFIX}/}"
 
-  rclone copy "$SRC_FILE" "s3:${S3_BUCKET}/${S3_PREFIX:+${S3_PREFIX}/}${DEST_FILE}"
+  rclone copy "$SRC_FILE" "s3:${S3_BUCKET}/${S3_PREFIX:+${S3_PREFIX}/}" --s3-no-check-bucket
 
   if [ $? != 0 ]; then
     >&2 echo "Error uploading ${DEST_FILE} to S3"
