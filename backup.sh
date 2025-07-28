@@ -60,7 +60,7 @@ S3_FILE="${BACKUP_START_TIME}.gitea-dump.zip"
 
 cd /backup
 echo "Dumping Gitea..."
-su -c "/app/gitea/gitea dump" $GITEA_USER
+su -c "/usr/local/bin/gitea dump" $GITEA_USER
 echo "Done"
 
 unset -v DUMP_FILE
