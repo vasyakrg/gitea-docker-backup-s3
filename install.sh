@@ -5,10 +5,7 @@ set -e
 
 export PATH="/usr/local/bin:/usr/bin:/bin"
 
-apk update
-
-# install s3 tools
-apk add python3 curl unzip
+# install awscli
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
 unzip /tmp/awscliv2.zip -d /tmp
 /tmp/aws/install

@@ -10,7 +10,8 @@ ENV S3_BUCKET=**None** \
     GITEA_USER=git \
     GITEA_CUSTOM=/data/gitea
 
-RUN adduser -D -s /bin/sh git
+RUN apk update && apk add --no-cache curl unzip python3 && \
+	adduser -D -s /bin/sh git
 
 ADD install.sh install.sh
 RUN sh install.sh && rm install.sh
