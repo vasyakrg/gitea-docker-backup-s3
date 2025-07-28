@@ -24,6 +24,8 @@ Those marked with `*` are mandatory.
 
 `S3_BUCKET`*****
 
+`S3_PROVIDER`*****
+
 `S3_REGION`*****
 
 `S3_ENDPOINT`: Use this if for Minio, etc..
