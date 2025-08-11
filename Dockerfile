@@ -9,7 +9,8 @@ ENV GITEA_VERSION=1.24.3 \
 	S3_ENCRYPT=no \
 	SCHEDULE=**None** \
 	GITEA_USER=git \
-	GITEA_CUSTOM=/data/gitea
+	GITEA_CUSTOM=/data/gitea \
+	HEALTHCHECK=**None**
 
 RUN apk update && apk add --no-cache curl unzip && \
 	adduser -D -s /bin/sh git

@@ -2,11 +2,19 @@
 
 [Gitea](https://gitea.io) git server provides a `dump` command which packages all your repositories, configuration and database in a single .zip file.
 
-Through this image you can schedule periodic dumps and automate the transfer of the resulting files to an S3 bucket.
+Through this image you can schedule periodic dumps and automate the transfer of the resulting files to an S3-compatible storage using rclone.
+
+## Features
+
+- Automated Gitea backups using the official `gitea dump` command
+- S3-compatible storage support (AWS S3, MinIO, etc.)
+- Configurable backup scheduling with cron syntax
+- Health check integration for monitoring
+- Lightweight Alpine-based image
 
 ## Usage
 
-`docker pull gitea.bildme.ru/pub/docker-gitea-backup-s3`
+`docker pull ghcr.io/[owner]/docker-gitea-backup-s3`
 
 ### Volume
 
@@ -14,26 +22,83 @@ In order to ensure persistence of your data using the [Gitea docker image](https
 
 To use this serivice just mount the same folder or data-volume into the `/data` directory of the backup serivice container.
 
-### ENV vars
+### Environment Variables
 
 Those marked with `*` are mandatory.
 
-`AWS_ACCESS_KEY_ID`*****
+#### S3 Configuration
+- `AWS_ACCESS_KEY_ID`* - AWS access key ID
+- `AWS_SECRET_ACCESS_KEY`* - AWS secret access key
+- `S3_BUCKET`* - S3 bucket name
+- `S3_REGION`* - S3 region (e.g., `us-east-1`)
+- `S3_ENDPOINT` - Custom S3 endpoint for MinIO or other S3-compatible services
+- `S3_PREFIX` - Prefix for backup files in bucket (without leading/trailing `/`)
+- `S3_ENCRYPT` - Set to `yes` to enable S3 server-side AES-256 encryption
 
-`AWS_SECRET_ACCESS_KEY`*****
+#### Backup Configuration
+- `SCHEDULE` - Cron schedule for backups (see [cron syntax](https://godoc.org/github.com/robfig/cron#hdr-Predefined_schedules)). If not set, backup runs once and container exits
+- `GITEA_USER` - User to run gitea dump command (default: `git`)
+- `GITEA_CUSTOM` - Path to Gitea custom directory (default: `/data/gitea`)
 
-`S3_BUCKET`*****
+#### Monitoring
+- `HEALTHCHECK` - Health check URL (https://healthchecks.io/ping/<id>) for monitoring (optional)
 
-`S3_PROVIDER`*****
+## Examples
 
-`S3_REGION`*****
+### Basic Usage with AWS S3
+```bash
+docker run -d \
+  --name gitea-backup \
+  -v gitea_data:/data \
+  -e AWS_ACCESS_KEY_ID=your_access_key \
+  -e AWS_SECRET_ACCESS_KEY=your_secret_key \
+  -e S3_BUCKET=my-gitea-backups \
+  -e S3_REGION=us-east-1 \
+  -e SCHEDULE="0 2 * * *" \
+  ghcr.io/[owner]/docker-gitea-backup-s3
+```
 
-`S3_ENDPOINT`: Use this if for Minio, etc..
+### MinIO Configuration
+```bash
+docker run -d \
+  --name gitea-backup \
+  -v gitea_data:/data \
+  -e AWS_ACCESS_KEY_ID=minio_access_key \
+  -e AWS_SECRET_ACCESS_KEY=minio_secret_key \
+  -e S3_BUCKET=gitea-backups \
+  -e S3_REGION=us-east-1 \
+  -e S3_ENDPOINT=https://minio.example.com \
+  -e S3_PREFIX=backups \
+  -e SCHEDULE="0 3 * * 0" \
+  -e HEALTHCHECK=https://healthchecks.io/ping/<id> \
+  ghcr.io/[owner]/docker-gitea-backup-s3
+```
 
-`S3_S3V4`: Set to `yes` to use a v4 signature. **Note**: you _must_ use v4 to upload in some regions, like `eu-central-1`.
+### Docker Compose
+```yaml
+version: '3.8'
+services:
+  gitea-backup:
+    image: ghcr.io/[owner]/docker-gitea-backup-s3
+    volumes:
+      - gitea_data:/data
+    environment:
+      - AWS_ACCESS_KEY_ID=your_access_key
+      - AWS_SECRET_ACCESS_KEY=your_secret_key
+      - S3_BUCKET=my-gitea-backups
+      - S3_REGION=us-east-1
+      - SCHEDULE=0 2 * * *
+      - HEALTHCHECK=https://healthchecks.io/ping/<id>
+```
 
-`S3_PREFIX`: Use this (without leading or trailing `/`) if you need to partition data in your bucket.
+## Health Check Integration
 
-`S3_ENCRYPT`: Set to `yes` to use S3 server side AES-256 encryption.
+If `HEALTHCHECK` environment variable is set, the service will send a GET request to `https://healthchecks.io/ping/<id>` after successful backup upload. This can be used with services like Healthchecks.io for monitoring.
 
-`SCHEDULE`: backup schedule time (more info [here](https://godoc.org/github.com/robfig/cron#hdr-Predefined_schedules)). If you don't set this the backup will fire immediately and then the container will exit.
+## Build from Source
+
+```bash
+git clone https://github.com/[owner]/docker-gitea-backup-s3
+cd docker-gitea-backup-s3
+docker build -t gitea-backup-s3 .
+```

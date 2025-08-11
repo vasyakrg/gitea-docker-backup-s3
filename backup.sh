@@ -54,9 +54,11 @@ move_to_s3 () {
 
   if [ $? != 0 ]; then
     >&2 echo "Error uploading ${DEST_FILE} to S3"
+    return 1
   fi
 
   rm "$SRC_FILE"
+  return 0
 }
 
 BACKUP_START_TIME=$(date +"%Y-%m-%dT%H%M%SZ")
@@ -80,6 +82,18 @@ if [ -z "$DUMP_FILE" ]; then
   exit 1
 fi
 
-move_to_s3 "$DUMP_FILE" "$S3_FILE"
+if move_to_s3 "$DUMP_FILE" "$S3_FILE"; then
+  echo "Backup uploaded successfully"
 
-echo "Gitea backup finished"
+  # Send healthcheck only on successful upload
+  if [ "${HEALTHCHECK}" != "**None**" ] && [ -n "${HEALTHCHECK}" ]; then
+    echo "Sending healthcheck..."
+    curl -m 10 --retry 5 "${HEALTHCHECK}"
+    echo "Healthcheck sent"
+  fi
+
+  echo "Gitea backup finished successfully"
+else
+  echo "Backup failed - upload to S3 unsuccessful"
+  exit 1
+fi
