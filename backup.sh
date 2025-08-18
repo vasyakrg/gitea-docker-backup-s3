@@ -1,21 +1,24 @@
-#! /bin/bash
+#! /bin/sh
 
 set -e
 
-if [ "${AWS_ACCESS_KEY_ID}" == "**None**" ]; then
+# Add timestamp to logs
+echo "=== Backup started at $(date) ==="
+
+if [ "${AWS_ACCESS_KEY_ID}" = "**None**" ]; then
   echo "Warning: You did not set the AWS_ACCESS_KEY_ID environment variable."
 fi
 
-if [ "${AWS_SECRET_ACCESS_KEY}" == "**None**" ]; then
+if [ "${AWS_SECRET_ACCESS_KEY}" = "**None**" ]; then
   echo "Warning: You did not set the AWS_SECRET_ACCESS_KEY environment variable."
 fi
 
-if [ "${S3_BUCKET}" == "**None**" ]; then
+if [ "${S3_BUCKET}" = "**None**" ]; then
   echo "You need to set the S3_BUCKET environment variable."
   exit 1
 fi
 
-if [ "${S3_REGION}" == "**None**" ]; then
+if [ "${S3_REGION}" = "**None**" ]; then
   echo "You need to set the S3_REGION environment variable."
   exit 1
 fi
@@ -37,7 +40,7 @@ if [ "${S3_ENDPOINT}" != "**None**" ]; then
 endpoint = ${S3_ENDPOINT}"
 fi
 
-if [ "${S3_ENCRYPT}" == "yes" ]; then
+if [ "${S3_ENCRYPT}" = "yes" ]; then
   RCLONE_CONFIG="${RCLONE_CONFIG}
 server_side_encryption = AES256"
 fi
@@ -92,8 +95,10 @@ if move_to_s3 "$DUMP_FILE" "$S3_FILE"; then
     echo "Healthcheck sent"
   fi
 
-  echo "Gitea backup finished successfully"
+  echo "Gitea backup finished successfully at $(date)"
 else
-  echo "Backup failed - upload to S3 unsuccessful"
+  echo "Backup failed - upload to S3 unsuccessful at $(date)"
   exit 1
 fi
+
+echo "=== Backup completed at $(date) ==="

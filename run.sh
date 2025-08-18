@@ -7,7 +7,10 @@ if [ "${S3_S3V4}" = "yes" ]; then
 fi
 
 if [ "${SCHEDULE}" = "**None**" ]; then
-  bash /backup.sh
+  sh /backup.sh
 else
-  exec go-cron -s "$SCHEDULE" -p 8080 -- /bin/sh /backup.sh
+  # Create log directory
+  mkdir -p /var/log
+  echo "Starting scheduled backup with cron: $SCHEDULE"
+  exec go-cron -s "$SCHEDULE" -p 8080 -- /bin/sh -c "exec /backup.sh 2>&1 | tee -a /var/log/backup.log"
 fi
