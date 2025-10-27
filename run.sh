@@ -2,15 +2,26 @@
 
 set -e
 
-if [ "${S3_S3V4}" = "yes" ]; then
-    aws configure set default.s3.signature_version s3v4
+# Set timezone
+if [ -n "$TZ" ] && [ -f "/usr/share/zoneinfo/$TZ" ]; then
+  ln -sf "/usr/share/zoneinfo/$TZ" /etc/localtime
+  echo "$TZ" > /etc/timezone
+  echo "Timezone set to: $TZ"
 fi
 
 if [ "${SCHEDULE}" = "**None**" ]; then
+  # Run backup once and exit
   sh /backup.sh
 else
-  # Create log directory
+  # Create log directory and crontab
   mkdir -p /var/log
-  echo "Starting scheduled backup with cron: $SCHEDULE"
-  exec go-cron -s "$SCHEDULE" -p 8080 -- /bin/sh -c "exec /backup.sh 2>&1 | tee -a /var/log/backup.log"
+
+  # Create crontab entry
+  echo "${SCHEDULE} /backup.sh >> /var/log/backup.log 2>&1" > /etc/crontabs/root
+
+  echo "Starting crond with schedule: $SCHEDULE"
+  echo "Logs available at: /var/log/backup.log"
+
+  # Start crond in foreground
+  exec crond -f -l 2
 fi

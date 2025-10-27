@@ -10,9 +10,10 @@ ENV GITEA_VERSION=1.24.3 \
 	SCHEDULE=**None** \
 	GITEA_USER=git \
 	GITEA_CUSTOM=/data/gitea \
-	HEALTHCHECK=**None**
+	HEALTHCHECK=**None** \
+	TZ=UTC
 
-RUN apk update && apk add --no-cache curl unzip && \
+RUN apk update && apk add --no-cache curl unzip tzdata && \
 	adduser -D -s /bin/sh git
 
 ADD install.sh install.sh
@@ -22,6 +23,5 @@ ADD run.sh run.sh
 ADD backup.sh backup.sh
 
 VOLUME ["/data"]
-EXPOSE 8080
 
 CMD ["sh", "run.sh"]

@@ -39,6 +39,7 @@ Those marked with `*` are mandatory.
 - `SCHEDULE` - Cron schedule for backups (see [cron syntax](https://godoc.org/github.com/robfig/cron#hdr-Predefined_schedules)). Use numeric values for days: 0=Sunday, 1=Monday, etc. If not set, backup runs once and container exits
 - `GITEA_USER` - User to run gitea dump command (default: `git`)
 - `GITEA_CUSTOM` - Path to Gitea custom directory (default: `/data/gitea`)
+- `TZ` - Timezone for cron scheduling (default: `UTC`, e.g., `Europe/Moscow`, `America/New_York`)
 
 #### Monitoring
 - `HEALTHCHECK` - Health check URL (https://healthchecks.io/ping/<id>) for monitoring (optional)
@@ -62,6 +63,7 @@ docker run -d \
   -e S3_BUCKET=my-gitea-backups \
   -e S3_REGION=us-east-1 \
   -e SCHEDULE="0 2 * * *" \
+  -e TZ=Europe/Moscow \
   ghcr.io/[owner]/docker-gitea-backup-s3
 ```
 
@@ -98,9 +100,16 @@ services:
       - HEALTHCHECK=https://healthchecks.io/ping/<id>
 ```
 
-## Health Check Integration
+## Monitoring
 
-If `HEALTHCHECK` environment variable is set, the service will send a GET request to `https://healthchecks.io/ping/<id>` after successful backup upload. This can be used with services like Healthchecks.io for monitoring.
+### Logs
+When running with a schedule, logs are written to `/var/log/backup.log` inside the container:
+```bash
+docker exec container_name tail -f /var/log/backup.log
+```
+
+### Health Check Integration
+If `HEALTHCHECK` environment variable is set, the service will send a GET request to the specified URL after successful backup upload. This can be used with services like Healthchecks.io for monitoring.
 
 ## Build from Source
 

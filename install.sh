@@ -20,11 +20,6 @@ curl -L "https://dl.gitea.io/gitea/${GITEA_VERSION}/gitea-${GITEA_VERSION}-linux
 chmod +x /usr/local/bin/gitea
 echo "gitea binary installed successfully"
 
-echo "Installing go-cron..."
-curl -L --insecure https://github.com/odise/go-cron/releases/download/v0.0.7/go-cron-linux.gz | zcat > /usr/local/bin/go-cron
-chmod u+x /usr/local/bin/go-cron
-echo "go-cron installed successfully"
-
 echo "Creating directories..."
 mkdir -p /backup /data
 chown git /backup /data
