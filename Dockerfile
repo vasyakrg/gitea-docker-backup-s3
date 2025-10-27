@@ -21,6 +21,7 @@ RUN sh install.sh && rm install.sh
 
 ADD run.sh run.sh
 ADD backup.sh backup.sh
+RUN chmod +x run.sh backup.sh
 
 VOLUME ["/data"]
 

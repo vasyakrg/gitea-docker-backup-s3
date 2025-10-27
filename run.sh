@@ -17,7 +17,7 @@ else
   mkdir -p /var/log
 
   # Create crontab entry
-  echo "${SCHEDULE} /backup.sh >> /var/log/backup.log 2>&1" > /etc/crontabs/root
+  echo "${SCHEDULE} sh /backup.sh >> /var/log/backup.log 2>&1" > /etc/crontabs/root
 
   echo "Starting crond with schedule: $SCHEDULE"
   echo "Logs available at: /var/log/backup.log"
