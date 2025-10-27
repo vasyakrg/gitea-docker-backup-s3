@@ -36,12 +36,19 @@ Those marked with `*` are mandatory.
 - `S3_ENCRYPT` - Set to `yes` to enable S3 server-side AES-256 encryption
 
 #### Backup Configuration
-- `SCHEDULE` - Cron schedule for backups (see [cron syntax](https://godoc.org/github.com/robfig/cron#hdr-Predefined_schedules)). If not set, backup runs once and container exits
+- `SCHEDULE` - Cron schedule for backups (see [cron syntax](https://godoc.org/github.com/robfig/cron#hdr-Predefined_schedules)). Use numeric values for days: 0=Sunday, 1=Monday, etc. If not set, backup runs once and container exits
 - `GITEA_USER` - User to run gitea dump command (default: `git`)
 - `GITEA_CUSTOM` - Path to Gitea custom directory (default: `/data/gitea`)
 
 #### Monitoring
 - `HEALTHCHECK` - Health check URL (https://healthchecks.io/ping/<id>) for monitoring (optional)
+
+## Cron Schedule Examples
+
+- `0 2 * * *` - Daily at 2:00 AM
+- `0 3 * * 1` - Every Monday at 3:00 AM
+- `0 4 * * 0` - Every Sunday at 4:00 AM
+- `30 1 1 * *` - 1st day of month at 1:30 AM
 
 ## Examples
 
@@ -69,7 +76,7 @@ docker run -d \
   -e S3_REGION=us-east-1 \
   -e S3_ENDPOINT=https://minio.example.com \
   -e S3_PREFIX=backups \
-  -e SCHEDULE="0 3 * * 0" \
+  -e SCHEDULE="0 3 * * 1" \
   -e HEALTHCHECK=https://healthchecks.io/ping/<id> \
   ghcr.io/[owner]/docker-gitea-backup-s3
 ```
