@@ -69,7 +69,7 @@ S3_FILE="${BACKUP_START_TIME}.gitea-dump.zip"
 
 cd /backup
 echo "Dumping Gitea..."
-su -c "/usr/local/bin/gitea dump" $GITEA_USER
+su -c "/usr/local/bin/gitea dump ${GITEA_DUMP_ARGS}" $GITEA_USER
 echo "Done"
 
 # Find the newest dump file

@@ -39,6 +39,7 @@ Those marked with `*` are mandatory.
 - `SCHEDULE` - Cron schedule for backups (see [cron syntax](https://godoc.org/github.com/robfig/cron#hdr-Predefined_schedules)). Use numeric values for days: 0=Sunday, 1=Monday, etc. If not set, backup runs once and container exits
 - `GITEA_USER` - User to run gitea dump command (default: `git`)
 - `GITEA_CUSTOM` - Path to Gitea custom directory (default: `/data/gitea`)
+- `GITEA_DUMP_ARGS` - Additional arguments for `gitea dump` command (default: empty, e.g., `--skip-packages`, `--skip-lfs-data`, `--type tar.gz`)
 - `TZ` - Timezone for cron scheduling (default: `UTC`, e.g., `Europe/Moscow`, `America/New_York`)
 
 #### Monitoring
