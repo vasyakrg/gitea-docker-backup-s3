@@ -42,8 +42,28 @@ Those marked with `*` are mandatory.
 - `GITEA_DUMP_ARGS` - Additional arguments for `gitea dump` command (default: empty, e.g., `--skip-attachment-data`, `--skip-package-data`, `--skip-lfs-data`, `--type tar.gz`)
 - `TZ` - Timezone for cron scheduling (default: `UTC`, e.g., `Europe/Moscow`, `America/New_York`)
 
+#### Rotation
+
+Rotation runs only after a backup has been uploaded successfully, and never deletes the copy just uploaded. If rotation fails, the run is still reported as successful — the fresh backup is already in place.
+
+- `BACKUP_ROTATION` - Set to `yes` to delete old backups from S3 after a successful upload (default: `no`)
+- `BACKUP_KEEP_COUNT` - How many backups to keep, newest first (default: `7`). Values below `1`, empty or non-numeric fall back to `1` — at least one backup is always kept
+- `BACKUP_PATTERN` - Glob matching the objects rotation is allowed to delete (default: `gitea-dump-*`). Only objects matching it are ever considered, so unrelated files sharing the bucket or prefix are never touched. Change it if `GITEA_DUMP_ARGS` sets a custom `--file-name`
+
 #### Monitoring
 - `HEALTHCHECK` - Health check URL (https://healthchecks.io/ping/<id>) for monitoring (optional)
+
+The container signals every stage of a run, Healthchecks.io style:
+
+| Request | When |
+|---|---|
+| `<HEALTHCHECK>/start` | run begins |
+| `<HEALTHCHECK>` | dump uploaded to S3 successfully |
+| `<HEALTHCHECK>/fail` | any failure: missing configuration, failed `gitea dump`, failed upload |
+
+The `/fail` signal matters: without it a broken run stays silent and the monitoring service only reacts once the grace period expires — and the next successful run clears the alert before anyone notices. With it, a failed backup turns the check red immediately.
+
+Failures of the monitoring service itself never affect the backup: an unreachable `HEALTHCHECK` URL is logged as a warning, and the exit code still reflects the backup only.
 
 ## Cron Schedule Examples
 
@@ -81,6 +101,22 @@ docker run -d \
   -e S3_PREFIX=backups \
   -e SCHEDULE="0 3 * * 1" \
   -e HEALTHCHECK=https://healthchecks.io/ping/<id> \
+  ghcr.io/[owner]/docker-gitea-backup-s3
+```
+
+### Keeping only the last 10 backups
+```bash
+docker run -d \
+  --name gitea-backup \
+  -v gitea_data:/data \
+  -e AWS_ACCESS_KEY_ID=your_access_key \
+  -e AWS_SECRET_ACCESS_KEY=your_secret_key \
+  -e S3_BUCKET=my-gitea-backups \
+  -e S3_REGION=us-east-1 \
+  -e S3_PREFIX=gitea \
+  -e SCHEDULE="0 2 * * *" \
+  -e BACKUP_ROTATION=yes \
+  -e BACKUP_KEEP_COUNT=10 \
   ghcr.io/[owner]/docker-gitea-backup-s3
 ```
 

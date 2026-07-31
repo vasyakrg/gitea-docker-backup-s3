@@ -12,6 +12,9 @@ ENV GITEA_VERSION=1.24.3 \
   GITEA_CUSTOM=/data/gitea \
   HEALTHCHECK=**None** \
   GITEA_DUMP_ARGS="" \
+  BACKUP_ROTATION=no \
+  BACKUP_KEEP_COUNT=7 \
+  BACKUP_PATTERN="gitea-dump-*" \
   TZ=UTC
 
 RUN apk update && apk add --no-cache curl unzip tzdata && \
